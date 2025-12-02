@@ -15,16 +15,25 @@ import { CircleIcon } from '@/components/ui/icon';
 import { Header } from '../components';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { orderAPI } from '../services/api';
-import { router } from 'expo-router';
-import { useStripe } from '@/utils/stripe';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '../firebaseConfig';
+import { Platform } from 'react-native';
+
+import { useStripe, useElements, CardElement } from "@/utils/stripe";
+import { orderAPI } from '@/services/api';
+import { router } from 'expo-router';
+import { showAlert } from '@/utils';
+
+const isWeb = Platform.OS === "web";
 
 export default function CheckoutScreen() {
     const { items, totalAmount, clearCart } = useCart();
     const { user } = useAuth();
-    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
+
+    const stripe = useStripe();
+    const elements = isWeb ? useElements() : null;
+
     const [address, setAddress] = useState({
         street: '123 Main St',
         city: 'Seattle',
@@ -34,6 +43,7 @@ export default function CheckoutScreen() {
     });
     const [paymentMethod, setPaymentMethod] = useState('card');
     const [loading, setLoading] = useState(false);
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
 
     const fetchPaymentIntentClientSecret = async () => {
         try {
@@ -54,45 +64,50 @@ export default function CheckoutScreen() {
 
     const initializePaymentSheet = async () => {
         const clientSecret = await fetchPaymentIntentClientSecret();
+
         if (!clientSecret) return;
 
-        try {
-            const { error } = await initPaymentSheet({
+        if (!isWeb) {
+            await stripe.initPaymentSheet({
                 paymentIntentClientSecret: clientSecret,
-                merchantDisplayName: 'Amazon Clone',
-                customFlow: false,
-                // returnURL: 'myapp://stripe-redirect', // Replace with your app scheme
+                merchantDisplayName: "Amazon Clone",
+                customFlow: false
             });
-            if (error) {
-                Alert.alert('Error', error.message);
-            }
-        } catch (error: any) {
-            console.error('initPaymentSheet error:', error);
-            Alert.alert('Error', error.message || 'Failed to initialize payment sheet');
         }
+        setClientSecret(clientSecret);
     };
-
-    useEffect(() => {
-        if (paymentMethod === 'card' && totalAmount > 0) {
-            initializePaymentSheet();
-        }
-    }, [paymentMethod, totalAmount]);
 
     const handlePlaceOrder = async () => {
         if (!user) return;
         setLoading(true);
-
         try {
-            if (paymentMethod === 'card') {
-                const { error } = await presentPaymentSheet();
+            if (isWeb && paymentMethod === "card") {
+                const card = elements.getElement(CardElement);
+                if (!card) {
+                    alert("Card element missing");
+                    return;
+                }
+
+                const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card,
+                    },
+                });
 
                 if (error) {
-                    Alert.alert(`Error code: ${error.code}`, error.message);
-                    setLoading(false);
+                    alert(error.message);
                     return;
                 }
             }
 
+            if (!isWeb && paymentMethod === "card") {
+                const { error } = await stripe.presentPaymentSheet();
+                if (error) {
+                    showAlert(`Error code: ${error.code}: ${error.message}`);
+                    setLoading(false);
+                    return;
+                }
+            }
             const orderData = {
                 userId: user.id,
                 items: items.map(item => ({
@@ -114,16 +129,25 @@ export default function CheckoutScreen() {
             await orderAPI.create(orderData);
             await clearCart();
 
-            Alert.alert('Success', 'Your order has been placed!', [
-                { text: 'OK', onPress: () => router.replace('/orders') }
-            ]);
+            // Alert.alert('Success', 'Your order has been placed!', [
+            //     { text: 'OK', onPress: () => router.replace('/orders') }
+            // ]);
+
+            showAlert('Success. Your order has been placed!');
+            router.replace('/orders')
         } catch (error) {
             console.error('Error placing order:', error);
-            Alert.alert('Error', 'Failed to place order. Please try again.');
+            showAlert('Error: Failed to place order. Please try again.');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (paymentMethod === 'card' && totalAmount > 0) {
+            initializePaymentSheet();
+        }
+    }, [paymentMethod, totalAmount]);
 
     return (
         <Box className="flex-1 bg-gray-100">
@@ -179,7 +203,7 @@ export default function CheckoutScreen() {
                     </Box>
 
                     <Box className="bg-white p-4 rounded-md">
-                        <Heading className="text-md mb-2">Order Summary</Heading>
+                        <Heading className="text-md mb-2">3.Order Summary</Heading>
 
                         {/* Cart Items List */}
                         <VStack className="gap-2 mb-3">
@@ -222,6 +246,10 @@ export default function CheckoutScreen() {
                             </HStack>
                         </VStack>
 
+                    </Box>
+                    <Box className="bg-white p-4 rounded-md">
+
+                        {isWeb && <CardElement />}
                         <Button
                             className="mt-4 bg-yellow-400"
                             onPress={handlePlaceOrder}
@@ -234,6 +262,7 @@ export default function CheckoutScreen() {
                             )}
                         </Button>
                     </Box>
+
                 </VStack>
             </ScrollView>
         </Box>

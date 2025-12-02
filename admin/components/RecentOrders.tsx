@@ -32,7 +32,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
                                 </p>
                             </div>
                             <div className="ml-auto font-medium text-zinc-900 dark:text-white">
-                                ${order.totalPrice}
+                                ${order.totalAmount}
                             </div>
                         </div>
                     ))}

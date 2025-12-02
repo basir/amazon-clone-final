@@ -36,7 +36,7 @@ export interface Order {
     id: string;
     userId: string;
     items: any[];
-    totalPrice: number;
+    totalAmount: number;
     status: string;
     createdAt: string;
     shippingAddress: any;
@@ -60,7 +60,7 @@ export const api = {
         const usersSnap = await getDocs(collection(db, "users"));
 
         const totalRevenue = ordersSnap.docs.reduce(
-            (acc, doc) => acc + (doc.data().totalPrice || 0),
+            (acc, doc) => acc + (doc.data().totalAmount || 0),
             0
         );
 

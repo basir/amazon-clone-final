@@ -22,7 +22,7 @@ export default function OrderDetailScreen() {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const response = await orderAPI.getById(Number(id));
+                const response = await orderAPI.getById(String(id));
                 setOrder(response.data);
             } catch (error) {
                 console.error('Error fetching order:', error);

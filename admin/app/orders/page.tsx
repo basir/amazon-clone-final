@@ -95,15 +95,15 @@ export default function OrdersPage() {
                                         {order.items?.length || 0} items
                                     </td>
                                     <td className="p-4 align-middle text-zinc-900 dark:text-white">
-                                        ${order.totalPrice}
+                                        ${order.totalAmount}
                                     </td>
                                     <td className="p-4 align-middle">
                                         <span
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === "Completed"
-                                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                    : order.status === "Processing"
-                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                                                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                                : order.status === "Processing"
+                                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                                                 }`}
                                         >
                                             {order.status}

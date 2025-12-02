@@ -7,7 +7,7 @@
       "name": "Demo User",
       "phone": "1234567890",
       "addresses": [],
-      "isAdmin": false
+      "role": "user"
     },
     {
       "id": "2",
@@ -16,7 +16,7 @@
       "name": "Admin User",
       "phone": "1234567890",
       "addresses": [],
-      "isAdmin": true
+      "role": "admin"
     }
   ],
   "categories": [
