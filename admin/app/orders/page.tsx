@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search, Eye, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import { api, Order } from "@/lib/api";
 
 export default function OrdersPage() {
@@ -111,9 +112,12 @@ export default function OrdersPage() {
                                     </td>
                                     <td className="p-4 align-middle">
                                         <div className="flex items-center gap-2">
-                                            <button className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                            <Link
+                                                href={`/orders/${order.id}`}
+                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                            >
                                                 <Eye className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                                            </button>
+                                            </Link>
                                             <button className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                                 <MoreHorizontal className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                                             </button>

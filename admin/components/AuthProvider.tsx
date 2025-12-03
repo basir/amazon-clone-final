@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (firebaseUser) {
                 try {
                     const profile = await api.getUserProfile(firebaseUser.uid);
-                    if (profile && profile.role === "admin") {
+                    if (profile && profile.role === "Admin") {
                         setUser(firebaseUser);
                         setIsAdmin(true);
                     } else {

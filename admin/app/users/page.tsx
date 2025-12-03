@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, MoreHorizontal, UserPlus } from "lucide-react";
+import { Search, MoreHorizontal, UserPlus, Trash2 } from "lucide-react";
 import { api, User } from "@/lib/api";
 
 export default function UsersPage() {
@@ -23,6 +23,31 @@ export default function UsersPage() {
         fetchUsers();
     }, []);
 
+    const handleDeleteUser = async (id: string) => {
+        if (confirm("Are you sure you want to delete this user?")) {
+            try {
+                await api.deleteUser(id);
+                setUsers(users.filter((user) => user.id !== id));
+            } catch (error) {
+                console.error("Error deleting user:", error);
+            }
+        }
+    };
+
+    const handleUpdateRole = async (id: string, currentRole: string) => {
+        const newRole = currentRole === "Admin" ? "Customer" : "Admin";
+        try {
+            await api.updateUser(id, { role: newRole });
+            setUsers(
+                users.map((user) =>
+                    user.id === id ? { ...user, role: newRole } : user
+                )
+            );
+        } catch (error) {
+            console.error("Error updating user role:", error);
+        }
+    };
+
     if (loading) {
         return <div className="p-8">Loading users...</div>;
     }
@@ -33,10 +58,7 @@ export default function UsersPage() {
                 <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
                     Users
                 </h2>
-                <button className="flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
-                    <UserPlus className="h-4 w-4" />
-                    Add User
-                </button>
+
             </div>
 
             <div className="flex items-center gap-4">
@@ -97,9 +119,22 @@ export default function UsersPage() {
                                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
                                     </td>
                                     <td className="p-4 align-middle">
-                                        <button className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                                            <MoreHorizontal className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleUpdateRole(user.id, user.role)}
+                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                title="Toggle Role"
+                                            >
+                                                <UserPlus className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteUser(user.id)}
+                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-red-100 hover:text-red-900 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                                                title="Delete User"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

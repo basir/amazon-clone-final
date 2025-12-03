@@ -15,6 +15,7 @@ export interface User {
     name: string;
     phone: string | null;
     addresses: Address[];
+    firebaseUserId?: string; // Firebase Auth UID
 }
 
 export interface Product {

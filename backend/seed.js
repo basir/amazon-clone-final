@@ -25,11 +25,50 @@ const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
 async function seedDatabase() {
     console.log('Starting seed...');
 
-    // Seed Users
+    // Delete all existing Firebase Auth users
+    console.log('Deleting all existing Firebase Auth users...');
+    try {
+        const listUsersResult = await admin.auth().listUsers();
+        const deletePromises = listUsersResult.users.map(user =>
+            admin.auth().deleteUser(user.uid)
+        );
+        await Promise.all(deletePromises);
+        console.log(`Deleted ${listUsersResult.users.length} Firebase Auth users`);
+    } catch (error) {
+        console.error('Error deleting Firebase Auth users:', error);
+    }
+
+    // Seed Users - Create Firebase Auth users and save to Firestore
     if (data.users) {
         console.log(`Seeding ${data.users.length} users...`);
+
+        // Get the last user ID to continue incrementing
+        let lastId = 2; // Starting from 2 since we already have users 1 and 2
+
         for (const user of data.users) {
-            await db.collection('users').doc(user.id.toString()).set(user);
+            try {
+                // Create Firebase Auth user
+                const firebaseUser = await admin.auth().createUser({
+                    email: user.email,
+                    password: user.password,
+                    displayName: user.name,
+                });
+
+                console.log(`Created Firebase Auth user: ${user.email} with UID: ${firebaseUser.uid}`);
+
+                // Prepare user data for Firestore (without password)
+                const { password, ...userDataWithoutPassword } = user;
+                const userDataToSave = {
+                    ...userDataWithoutPassword,
+                    firebaseUserId: firebaseUser.uid,
+                };
+
+                // Save to Firestore with the original ID from db.json
+                await db.collection('users').doc(user.id.toString()).set(userDataToSave);
+                console.log(`Saved user to Firestore with ID: ${user.id}`);
+            } catch (error) {
+                console.error(`Error creating user ${user.email}:`, error);
+            }
         }
     }
 

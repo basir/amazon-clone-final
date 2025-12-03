@@ -111,6 +111,15 @@ export const api = {
         })) as Order[];
     },
 
+    getOrder: async (id: string) => {
+        const docRef = doc(db, "orders", id);
+        const snapshot = await getDoc(docRef);
+        if (snapshot.exists()) {
+            return { id: snapshot.id, ...snapshot.data() } as Order;
+        }
+        return null;
+    },
+
     updateOrderStatus: async (id: string, status: string) => {
         const docRef = doc(db, "orders", id);
         await updateDoc(docRef, { status });
@@ -125,12 +134,60 @@ export const api = {
         })) as User[];
     },
 
-    getUserProfile: async (id: string) => {
-        const docRef = doc(db, "users", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            return { id: docSnap.id, ...docSnap.data() } as User;
+    getUserProfile: async (firebaseUserId: string) => {
+        // Query users collection by firebaseUserId field
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("firebaseUserId", "==", firebaseUserId));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            return { id: userDoc.id, ...userDoc.data() } as User;
         }
         return null;
+    },
+
+    updateUser: async (id: string, data: Partial<User>) => {
+        const docRef = doc(db, "users", id);
+        await updateDoc(docRef, data);
+    },
+
+    deleteUser: async (id: string) => {
+        await deleteDoc(doc(db, "users", id));
+    },
+
+    // Monthly Revenue
+    getMonthlyRevenue: async () => {
+        const ordersSnap = await getDocs(collection(db, "orders"));
+        const currentYear = new Date().getFullYear();
+
+        // Initialize all 12 months with 0 revenue
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthlyData = monthNames.map((name, index) => ({
+            name,
+            total: 0,
+            month: index,
+        }));
+
+        // Aggregate revenue by month
+        ordersSnap.docs.forEach((doc) => {
+            const orderData = doc.data();
+            const createdAt = orderData.createdAt;
+
+            if (createdAt) {
+                // Parse the date (assuming ISO string format)
+                const orderDate = new Date(createdAt);
+                const orderYear = orderDate.getFullYear();
+                const orderMonth = orderDate.getMonth();
+
+                // Only count orders from the current year
+                if (orderYear === currentYear) {
+                    monthlyData[orderMonth].total += orderData.totalAmount || 0;
+                }
+            }
+        });
+
+        // Return only the name and total for the chart
+        return monthlyData.map(({ name, total }) => ({ name, total }));
     },
 };

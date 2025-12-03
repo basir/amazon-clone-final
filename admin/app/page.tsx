@@ -20,6 +20,7 @@ export default function Home() {
     totalUsers: 0,
   });
   const [orders, setOrders] = useState<Order[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<{ name: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,8 +28,10 @@ export default function Home() {
       try {
         const statsData = await api.getStats();
         const ordersData = await api.getOrders();
+        const monthlyData = await api.getMonthlyRevenue();
         setStats(statsData);
         setOrders(ordersData);
+        setMonthlyRevenue(monthlyData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -78,7 +81,7 @@ export default function Home() {
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4">
-          <OverviewChart />
+          <OverviewChart data={monthlyRevenue} />
         </div>
         <div className="col-span-3">
           <RecentOrders orders={orders} />

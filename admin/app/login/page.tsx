@@ -25,7 +25,7 @@ export default function LoginPage() {
 
             // Verify admin role
             const profile = await api.getUserProfile(user.uid);
-            if (profile && profile.role === "admin") {
+            if (profile && profile.role === "Admin") {
                 router.push("/");
             } else {
                 setError("Access denied. You do not have admin privileges.");

@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { User } from '../types';
 import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 interface AuthContextType {
     user: User | null;
@@ -23,17 +23,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
-                // Fetch user data from Firestore
-                const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-                if (userDoc.exists()) {
-                    setUser(userDoc.data() as User);
+                // Find user in Firestore by firebaseUserId field
+                const usersRef = collection(db, 'users');
+                const q = query(usersRef, where('firebaseUserId', '==', firebaseUser.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0];
+                    setUser({ id: userDoc.id, ...userDoc.data() } as User);
                 } else {
                     // Handle case where user exists in Auth but not Firestore (shouldn't happen normally)
                     setUser({
                         id: firebaseUser.uid,
                         email: firebaseUser.email!,
                         name: firebaseUser.displayName || 'User',
-                        addresses: []
+                        addresses: [],
+                        firebaseUserId: firebaseUser.uid
                     } as any);
                 }
             } else {
@@ -75,19 +80,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const register = async (userData: Partial<User>) => {
         if (!userData.email || !userData.password) throw new Error('Email and password required');
         console.log("Registering user:", userData);
+
+        // Create Firebase Auth user
         const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
         const firebaseUser = userCredential.user;
 
+        // Get the last user ID to auto-increment
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        let maxId = 0;
+        usersSnapshot.docs.forEach(doc => {
+            const id = parseInt(doc.id);
+            if (!isNaN(id) && id > maxId) {
+                maxId = id;
+            }
+        });
+        const newUserId = (maxId + 1).toString();
+
         const newUser: User = {
-            id: firebaseUser.uid as any, // Using string ID for Firebase
+            id: newUserId,
             email: userData.email,
             name: userData.name || 'User',
             phone: userData.phone || null,
             addresses: [],
-        };
+            firebaseUserId: firebaseUser.uid, // Save Firebase UID separately
+        } as any;
 
-        // Save user data to Firestore
-        await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+        // Save user data to Firestore with auto-incremented ID
+        await setDoc(doc(db, 'users', newUserId), newUser);
         setUser(newUser);
     };
 
