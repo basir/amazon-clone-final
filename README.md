@@ -83,6 +83,11 @@ Then deploy following components.
     Navigate to the `backend` folder:
     ```bash
     cd backend
+    npm install
+    cd functions
+    npm install
+    cd ..
+    # make sure you enabled Blaze plan in your firebase project before deploying
     npm run deploy
     # enter STRIPE_SECRET_KEY in the prompt
     ```
@@ -95,21 +100,40 @@ Then deploy following components.
     - Add FIREBASE_SERVICE_ACCOUNT_PATH to `backend/.env` with the path to the JSON file
 8. **Seed Data**:
     ```bash
-    npm install
     npm run seed
     ```
 
 ### Mobile App
 
-In this section, we will generate mobile app for web, android and ios. first duplicate `mobile/.env.example` to `mobile/.env.local` and create 3 apps on firebase console at https://console.firebase.google.com:
+In this section, we will generate mobile app for web, android and ios. 
+1. Duplicate `mobile/.env.example` to `mobile/.env.local` 
+2. On https://console.firebase.google.com create 3 apps:
+    - Web App: download the config file and update `mobile/.env.local`:
+    ```
+    EXPO_PUBLIC_FIREBASE_API_KEY_WEB=
+    EXPO_PUBLIC_FIREBASE_APP_ID_WEB=
+    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+    EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+    EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+    EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+    ```
+    - Android App: download the config file and update `mobile/.env.local`:
+    ```
+    EXPO_PUBLIC_FIREBASE_API_KEY_ANDROID=
+    EXPO_PUBLIC_FIREBASE_APP_ID_ANDROID=
+    ```
+    - iOS App: download the config file and update `mobile/.env.local`:
+    ```
+    EXPO_PUBLIC_FIREBASE_API_KEY_IOS=
+    EXPO_PUBLIC_FIREBASE_APP_ID_IOS=
+    ```
 
-1. Web App: download the config file and fill `mobile/.env.local`
-2. Android App: download the config file and fill `mobile/.env.local`
-3. iOS App: download the config file and fill `mobile/.env.local`
+3. GEt stripe publishable key from stripe dashbaord and update `mobile/.env.local`
+    ```
+    EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+    ```
 
-Then set the `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` in `mobile/.env.local` with your stripe publishable key.
-
-#### 3.1. Web App
+#### Web App
 
 1. Install dependencies
     ```bash
@@ -120,32 +144,34 @@ Then set the `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` in `mobile/.env.local` with yo
     ```bash
     npm run web
     ```
-3. Export web app
+
+##### Publish Web App to Expo
+1. Export web app
     ```bash
-        npx expo export --platform web
+    npx expo export --platform web
     ```
-4. Create expo account at [expo.dev](https://expo.dev)
-5. Install Expo CLI
+2. Create expo account at [expo.dev](https://expo.dev)
+3. Install Expo CLI
     ```bash
     npm install -g expo-cli
     ```
-6. Open terminal and login to expo
+4. Open terminal and login to expo
     ```bash
         eas login      
         # enter your email and password
         # Logged in
     ```
-7. Deploy web app
+5. Deploy web app
     ```bash
         eas deploy 
     ```
-8. open https://your-app-name.expo.app
+6. open https://your-app-name.expo.app
 
 
-#### 3.2. Android App
+#### Android App
 
 For this section, you need to have an Android device.
-1. Install Expo Go on your Android device. Download from [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent).
+1. Install "Expo Go" app on your Android device. Download from [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent).
 2. Connect Your Computer + Android device to the same Wi-Fi.
 3. In your project:
     ```bash
@@ -165,11 +191,14 @@ For this section, you need to have an Android device.
     - Build android app
     ```bash 
         eas build -p android --profile production
+        
     ```
+    - Go to [expo.dev](https://expo.dev) and download the generated .aab file
+
 2. Submit `.aab` to Google Play:
-   1. Create a Google Play Developer account.
+   1. Create a Google Play Developer account at [Google Play Console](https://play.google.com/console)
     - Pay $25 one-time fee.
-    - Go to Play Console
+    - Verify your account.
    2. Create a new app
     - Click “Create App” → fill app name, language, type, content rating.
    3. Prepare store listing
@@ -187,9 +216,9 @@ For this section, you need to have an Android device.
     - Click “Review and publish”.
     - Google will review your app (can take hours to a few days). After approval, it will be live.
 
-#### 3.3. iOS App
+#### iOS App
 For this section, you need to have a Mac computer and an iPhone.
-1. Install Expo Go on your iPhone. Download from [App Store](https://apps.apple.com/us/app/expo-go/id982107779).
+1. Install "Expo Go" app on your iPhone. Download from [App Store](https://apps.apple.com/us/app/expo-go/id982107779).
 2. Connect Mac + iPhone to the same Wi-Fi.
 3. In your project:
     ```bash
