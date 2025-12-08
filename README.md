@@ -144,22 +144,17 @@ Then set the `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` in `mobile/.env.local` with yo
 
 #### 3.2. Android App
 
-For this section you need an Android device. Enable Developer Options and USB debugging on the device:
-1. Connect Android Device via USB.
-    ```
-    Go to Settings → About phone → Tap “Build number” 7 times to enable Developer Options.
-
-    Go to Settings → Developer Options → Enable USB debugging.
-
-    Connect the device via USB.
-
-    Make sure adb devices lists your device.
-    ```
-2. Run the app
+For this section, you need to have an Android device.
+1. Install Expo Go on your Android device. Download from [Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent).
+2. Connect Your Computer + Android device to the same Wi-Fi.
+3. In your project:
     ```bash
-    npm run android
+    npx expo start --lan
     ```
-3. Generate `.aab` file
+4. Scan the QR code with your Android device → it opens in Expo Go.
+
+##### Publish Android App to Google Play
+1. Generate `.aab` file
     - Configure eas
     ```bash
         eas build:configure
@@ -171,7 +166,7 @@ For this section you need an Android device. Enable Developer Options and USB de
     ```bash 
         eas build -p android --profile production
     ```
-4. Submit `.aab` to Google Play:
+2. Submit `.aab` to Google Play:
    1. Create a Google Play Developer account.
     - Pay $25 one-time fee.
     - Go to Play Console
@@ -198,7 +193,7 @@ For this section, you need to have a Mac computer and an iPhone.
 2. Connect Mac + iPhone to the same Wi-Fi.
 3. In your project:
     ```bash
-    npx expo start --ios
+    npx expo start --lan
     ```
 4. Scan the QR code with your iPhone → it opens in Expo Go.
 
