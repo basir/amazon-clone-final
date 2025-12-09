@@ -1,8 +1,9 @@
-# Amazon Clone Ready To Deploy, Customize and Monitize.
+# Amazon App Clone Ready To Deploy, Customize and Monitize.
 
 “Normally cloning Amazon takes weeks — even with AI.
 But I already built it for you.
 You just deploy and start making money.”
+![amazon-clone](./screenshot.webp)
 
 ## Mobile App
 
@@ -57,7 +58,7 @@ A modern web-based administration dashboard to manage the platform.
 
 ## How to Deploy
 Create GitHub account and fork this repository.
- 1. Go to [https://github.com/basir/amazon-clone-final](https://github.com/basir/amazon-clone-final) and click fork button.
+ 1. Go to [https://github.com/basir/amazon-clone](https://github.com/basir/amazon-clone) and click fork button.
  2. Open your code editor (e.g. [Antigravity](https://antigravity.google/download)) and clone your forked repo.
 
 Then deploy following components.
